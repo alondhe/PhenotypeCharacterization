@@ -7,14 +7,17 @@ resultsDatabaseSchema <- Sys.getenv("resultsDatabaseSchema") # the schema with y
 cohortDefinitionId <- Sys.getenv("phenotypeCohortId") # set your CohortDefinitionId
 
 
-characterize(connectionDetails = connectionDetails,
-             cdmDatabaseSchema = cdmDatabaseSchema,
-             resultsDatabaseSchema = resultsDatabaseSchema,
-             cohortDefinitionId = cohortDefinitionId,
-             cohortTableName = "cohort") # change this if necessary
+stratifyIncidence(connectionDetails = connectionDetails,
+                     cdmDatabaseSchema = cdmDatabaseSchema,
+                     resultsDatabaseSchema = resultsDatabaseSchema,
+                     cohortDefinitionId = cohortDefinitionId,
+                     cohortTableName = "cohort", # change this to the name of your cohort table
+                     yearStart = "", # blank = use minimum available year, otherwise specify
+                     yearEnd = "") # blank = use maximum available year otherwise specify
 
 connection <- connect(connectionDetails)
-sql <- renderSql(sql = "select cdm_source_name from @cdmDatabaseSchema.cdm_source", cdmDatabaseSchema = cdmDatabaseSchema)$sql
+sql <- renderSql(sql = "select cdm_source_name from @cdmDatabaseSchema.cdm_source", 
+                 cdmDatabaseSchema = cdmDatabaseSchema)$sql
 cdmSourceName <- querySql(connection, sql)
 dbDisconnect(connection)
 
@@ -24,4 +27,8 @@ aggregateIncidence(connectionDetails = connectionDetails,
                    resultsDatabaseSchema = resultsDatabaseSchema,
                    cohortDefinitionId = cohortDefinitionId)
 
-# runDrugOutcomeSummary(connectionDetails = connectionDetails, cdmSourceName = cdmSourceName, cdmDatabaseSchema = cdmDatabaseSchema, resultsDatabaseSchema = resultsDatabaseSchema, cohortDefinitionId = cohortDefinitionId)
+runDrugOutcomeSummary(connectionDetails = connectionDetails, 
+                      cdmSourceName = cdmSourceName, 
+                      cdmDatabaseSchema = cdmDatabaseSchema, 
+                      resultsDatabaseSchema = resultsDatabaseSchema, 
+                      cohortDefinitionId = cohortDefinitionId)

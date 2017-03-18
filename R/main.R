@@ -1,28 +1,45 @@
 .onLoad <- function(libname, pkgname)
 {
+  if (!dir.exists("output"))
+  {
+    dir.create("output")
+  }
 }
 
-# @file main
+#' @title
+#' stratifyIncidence
 # @author Ajit Londhe, Christopher Knoll
 
-#' Run Phenotype Characterization Query
+#' Run Stratify Characterization Query for a Cohort
 #'
 #' @details
-#' Generates table of cohort measures, stratified
+#' Generates table of cohort incidence, stratified by age and year
 #'
 #' @return
 #' none
 #'
+#' @param connectionDetails      The connection details for your CDM
+#' @param cdmDatabaseSchema      The fully qualified schema name of your CDM
+#' @param resultsDatabaseSchema  The fully qualified schema name of where your cohort-like table is found
+#' @param cohortDefinitionId     The id of the cohort
+#' @param cohortTableName        The name of your cohort table; default is "cohort"
+#' @param yearStart              If necessary, the earliest year you want to run this on; default is take earliest available
+#' @param yearEnd                If necessary, the latest year you want to run this on; default is take latest available
+#' 
 #' @export
-characterize <- function(connectionDetails, 
+stratifyIncidence <- function(connectionDetails, 
                          cdmDatabaseSchema, 
                          resultsDatabaseSchema, 
                          cohortDefinitionId,
-                         cohortTableName = "cohort")
+                         cohortTableName = "cohort",
+                         yearStart = "",
+                         yearEnd = "")
 {
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "stratified.sql", 
                                     packageName = "PhenotypeCharacterization", 
                                     dbms = connectionDetails$dbms, 
+                                    yearStart = yearStart,
+                                    yearEnd = yearEnd,
                                     cdmDatabaseSchema = cdmDatabaseSchema,
                                     resultsDatabaseSchema = resultsDatabaseSchema,
                                     cohortDefinitionId = cohortDefinitionId,
@@ -30,10 +47,12 @@ characterize <- function(connectionDetails,
   
   connection <- connect(connectionDetails)
   result <- querySql(connection = connection, sql = sql)
+  dbDisconnect(connection)
   write.csv(x = result, file = "output/stratified.csv", na = "0", row.names = FALSE)
 }
 
-# @file main
+#' @title
+#' aggregateIncidence
 # @author Ajit Londhe, Christopher Knoll
 
 #' Run Aggregation of Incidence Query
@@ -43,18 +62,31 @@ characterize <- function(connectionDetails,
 #'
 #' @return
 #' none
-#'
+#' 
+#' @param connectionDetails      The connection details for your CDM
+#' @param cdmSourceName          The name of your CDM source
+#' @param cdmDatabaseSchema      The fully qualified schema name of your CDM
+#' @param resultsDatabaseSchema  The fully qualified schema name of where your cohort-like table is found
+#' @param cohortDefinitionId     The id of the cohort
+#' @param cohortTableName        The name of your cohort table; default is "cohort"
+#' @param yearStart              If necessary, the earliest year you want to run this on; default is take earliest available
+#' @param yearEnd                If necessary, the latest year you want to run this on; default is take latest available
+#' 
 #' @export
 aggregateIncidence <- function(connectionDetails, 
-                                    cdmSourceName, 
-                                    cdmDatabaseSchema, 
-                                    resultsDatabaseSchema, 
-                                    cohortDefinitionId,
-                                    cohortTableName = "cohort")
+                                cdmSourceName, 
+                                cdmDatabaseSchema, 
+                                resultsDatabaseSchema, 
+                                cohortDefinitionId,
+                                cohortTableName = "cohort",
+                                yearStart = "",
+                                yearEnd = "")
 {
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "aggregated.sql", 
                                            packageName = "PhenotypeCharacterization", 
                                            dbms = connectionDetails$dbms, 
+                                           yearStart = yearStart,
+                                           yearEnd = yearEnd,
                                            cdmSourceName = cdmSourceName,
                                            cdmDatabaseSchema = cdmDatabaseSchema,
                                            resultsDatabaseSchema = resultsDatabaseSchema,
@@ -63,10 +95,12 @@ aggregateIncidence <- function(connectionDetails,
   
   connection <- connect(connectionDetails)
   result <- querySql(connection = connection, sql = sql)
+  dbDisconnect(connection)
   write.csv(x = result, file = "output/aggregated.csv", na = "0", row.names = FALSE)
 }
 
-# @file main
+#' @title
+#' plotIncidenceTrellis
 # @author Ajit Londhe, Christopher Knoll
 
 #' Plot prevalence stratified by age, gender
@@ -76,9 +110,11 @@ aggregateIncidence <- function(connectionDetails,
 #'
 #' @return
 #' none
+#' 
+#' @param result      The data frame with your stratified incidence data
 #'
 #' @export
-plotPrevalanceTrellis <- function(result)
+plotIncidenceTrellis <- function(result)
 {
   #result <- read.csv("phenotypeDemo.csv")
   result$INCIDENCE <- result$INCIDENCE*1000
@@ -99,7 +135,8 @@ plotPrevalanceTrellis <- function(result)
   subplot(plots, shareY = TRUE, titleX = FALSE, titleY = TRUE)
 }
 
-# @file main
+#' @title
+#' runDrugOutcomeSummary
 # @author Ajit Londhe, Patrick Ryan
 
 #' Run Drug Outcome Summary
@@ -110,14 +147,20 @@ plotPrevalanceTrellis <- function(result)
 #' @return
 #' none
 #'
+#' @param connectionDetails      The connection details for your CDM
+#' @param cdmDatabaseSchema      The fully qualified schema name of your CDM
+#' @param resultsDatabaseSchema  The fully qualified schema name of where your cohort-like table is found
+#' @param cohortDefinitionId     The id of the cohort
+#' @param cohortTableName        The name of your cohort table; default is "cohort"
+#' 
 #' @export
 runDrugOutcomeSummary <- function(connectionDetails, 
-                                  cdmSourceName, 
                                   cdmDatabaseSchema, 
                                   resultsDatabaseSchema, 
                                   cohortDefinitionId,
                                   cohortTableName = "cohort")
 {
+  ## This is a hack for optimizing table distributions in PDW and Redshift
   ctasHashSubjectId <- ctasHashPersonId <- ctasTempPdw <- ""
   if (connectionDetails$dbms == "pdw")
   {
@@ -146,7 +189,9 @@ runDrugOutcomeSummary <- function(connectionDetails,
   
   connection <- connect(connectionDetails)
   executeSql(connection = connection, sql)
-  result <- querySql(connection = connection, sql = "select * from #hackathon_cohort_outcome_summary")
+  result <- querySql(connection = connection, 
+                     sql = "select * from #hackathon_cohort_outcome_summary")
+  dbDisconnect(connection)
   write.csv(x = result, file = "output/drug_outcome_summary.csv", na = "0", row.names = FALSE)
 }
                                

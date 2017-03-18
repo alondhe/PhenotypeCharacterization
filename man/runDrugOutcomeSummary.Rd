@@ -2,16 +2,25 @@
 % Please edit documentation in R/main.R
 \name{runDrugOutcomeSummary}
 \alias{runDrugOutcomeSummary}
-\title{Run Drug Outcome Summary}
+\title{runDrugOutcomeSummary
+Run Drug Outcome Summary}
 \usage{
-runDrugOutcomeSummary(connectionDetails, cdmSourceName, cdmDatabaseSchema,
+runDrugOutcomeSummary(connectionDetails, cdmDatabaseSchema,
   resultsDatabaseSchema, cohortDefinitionId, cohortTableName = "cohort")
+}
+\arguments{
+\item{connectionDetails}{The connection details for your CDM}
+
+\item{cdmDatabaseSchema}{The fully qualified schema name of your CDM}
+
+\item{resultsDatabaseSchema}{The fully qualified schema name of where your cohort-like table is found}
+
+\item{cohortDefinitionId}{The id of the cohort}
+
+\item{cohortTableName}{The name of your cohort table; default is "cohort"}
 }
 \value{
 none
-}
-\description{
-Run Drug Outcome Summary
 }
 \details{
 Runs Drug Outcome Summary query

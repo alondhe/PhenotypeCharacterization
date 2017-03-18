@@ -10,6 +10,8 @@ as
 	join @cdmDatabaseSchema.person B on A.subject_id = B.person_id
 	join @cdmDatabaseSchema.concept C on B.gender_concept_id = C.concept_id
 	where A.cohort_definition_id = @cohortDefinitionId
+	{@yearStart != ''}?{and year(A.cohort_start_date) >= @yearStart}
+	{@yearEnd != ''}?{and year(A.cohort_start_date) <= @yearEnd}
 	group by year(A.cohort_start_date), C.concept_name, floor((year(A.cohort_start_date) - B.year_of_birth) / 10)
 ),
 cte_denominator
@@ -24,6 +26,9 @@ as
 	(
 		select distinct year(observation_period_start_date) as index_year
 		from @cdmDatabaseSchema.observation_period
+		where 1=1
+		{@yearStart != ''}?{and year(observation_period_start_date) >= @yearStart}
+	  {@yearEnd != ''}?{and year(observation_period_start_date) <= @yearEnd}
 	) Y
 	left join @cdmDatabaseSchema.observation_period O on Y.index_year >= year(O.observation_period_start_date) and 
 		Y.index_year <= year(O.observation_period_end_date)
