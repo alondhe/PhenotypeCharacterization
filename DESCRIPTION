@@ -1,0 +1,17 @@
+Package: PhenotypeCharacterization
+Type: Package
+Title: A Wrapper Around RJDBC Containing Drivers for Various DBMSs
+Version: 0.0.1
+Date: 2017-03-17
+Author: Ajit Londhe and Christopher Knoll
+Maintainer: Ajit Londhe <alondhe2@its.jnj.com>
+Description: A few queries to characterize Phenotypes by various strata
+Depends:
+    RJDBC (>= 0.2-5)
+Imports:
+    SqlRender,
+    DatabaseConnector
+License: Apache License
+Suggests:
+    testthat
+RoxygenNote: 5.0.1
