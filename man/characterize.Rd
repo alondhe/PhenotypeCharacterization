@@ -5,7 +5,7 @@
 \title{Run Phenotype Characterization Query}
 \usage{
 characterize(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
-  cohortDefinitionId)
+  cohortDefinitionId, cohortTableName = "cohort")
 }
 \value{
 none
