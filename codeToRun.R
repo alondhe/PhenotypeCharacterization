@@ -6,20 +6,21 @@ cdmDatabaseSchema <- Sys.getenv("cdmDatabaseSchema") # the schema with your CDM 
 resultsDatabaseSchema <- Sys.getenv("resultsDatabaseSchema") # the schema with your Cohort table
 cohortDefinitionId <- Sys.getenv("phenotypeCohortId") # set your CohortDefinitionId
 
-
-stratifyIncidence(connectionDetails = connectionDetails,
-                     cdmDatabaseSchema = cdmDatabaseSchema,
-                     resultsDatabaseSchema = resultsDatabaseSchema,
-                     cohortDefinitionId = cohortDefinitionId,
-                     cohortTableName = "cohort", # change this to the name of your cohort table
-                     yearStart = "", # blank = use minimum available year, otherwise specify
-                     yearEnd = "") # blank = use maximum available year otherwise specify
-
 connection <- connect(connectionDetails)
 sql <- renderSql(sql = "select cdm_source_name from @cdmDatabaseSchema.cdm_source", 
                  cdmDatabaseSchema = cdmDatabaseSchema)$sql
 cdmSourceName <- querySql(connection, sql)
 dbDisconnect(connection)
+
+stratifyIncidence(connectionDetails = connectionDetails,
+                  cdmSourceName = cdmSourceName,
+                  cdmDatabaseSchema = cdmDatabaseSchema,
+                  resultsDatabaseSchema = resultsDatabaseSchema,
+                  cohortDefinitionId = cohortDefinitionId,
+                  cohortTableName = "cohort", # change this to the name of your cohort table
+                  yearStart = "", # blank = use minimum available year, otherwise specify
+                  yearEnd = "") # blank = use maximum available year otherwise specify
+
 
 aggregateIncidence(connectionDetails = connectionDetails,
                    cdmSourceName = cdmSourceName$CDM_SOURCE_NAME,

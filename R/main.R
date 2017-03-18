@@ -19,6 +19,7 @@
 #' none
 #'
 #' @param connectionDetails      The connection details for your CDM
+#' @param cdmSourceName          The name of your CDM source
 #' @param cdmDatabaseSchema      The fully qualified schema name of your CDM
 #' @param resultsDatabaseSchema  The fully qualified schema name of where your cohort-like table is found
 #' @param cohortDefinitionId     The id of the cohort
@@ -28,6 +29,7 @@
 #' 
 #' @export
 stratifyIncidence <- function(connectionDetails, 
+                         cdmSourceName,
                          cdmDatabaseSchema, 
                          resultsDatabaseSchema, 
                          cohortDefinitionId,
@@ -53,7 +55,9 @@ stratifyIncidence <- function(connectionDetails,
   connection <- connect(connectionDetails)
   result <- querySql(connection = connection, sql = sql)
   dbDisconnect(connection)
-  write.csv(x = result, file = "output/stratified.csv", na = "0", row.names = FALSE)
+  write.csv(x = result, 
+            file = paste0("output/", paste(cohortDefinitionId, cdmSourceName, "stratified.csv", sep = "_", collapse = "")), 
+            na = "0", row.names = FALSE)
 }
 
 #' @title
@@ -107,7 +111,9 @@ aggregateIncidence <- function(connectionDetails,
   connection <- connect(connectionDetails)
   result <- querySql(connection = connection, sql = sql)
   dbDisconnect(connection)
-  write.csv(x = result, file = "output/aggregated.csv", na = "0", row.names = FALSE)
+  write.csv(x = result, 
+            file = paste0("output/", paste(cohortDefinitionId, cdmSourceName, "aggregated.csv", sep = "_", collapse = "")), 
+            na = "0", row.names = FALSE)
 }
 
 #' @title
@@ -210,5 +216,9 @@ runDrugOutcomeSummary <- function(connectionDetails,
                      sql = "select * from #hackathon_cohort_outcome_summary")
   dbDisconnect(connection)
   write.csv(x = result, file = "output/drug_outcome_summary.csv", na = "0", row.names = FALSE)
+  write.csv(x = result, 
+            file = paste0("output/", paste(cohortDefinitionId, cdmSourceName, 
+                                           "drug_outcome_summary.csv", sep = "_", collapse = "")), 
+            na = "0", row.names = FALSE)
 }
                                

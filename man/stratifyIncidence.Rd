@@ -5,12 +5,14 @@
 \title{stratifyIncidence
 Run Stratify Characterization Query for a Cohort}
 \usage{
-stratifyIncidence(connectionDetails, cdmDatabaseSchema, resultsDatabaseSchema,
-  cohortDefinitionId, cohortTableName = "cohort", yearStart = "",
-  yearEnd = "")
+stratifyIncidence(connectionDetails, cdmSourceName, cdmDatabaseSchema,
+  resultsDatabaseSchema, cohortDefinitionId, cohortTableName = "cohort",
+  yearStart = "", yearEnd = "")
 }
 \arguments{
 \item{connectionDetails}{The connection details for your CDM}
+
+\item{cdmSourceName}{The name of your CDM source}
 
 \item{cdmDatabaseSchema}{The fully qualified schema name of your CDM}
 
