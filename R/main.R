@@ -33,7 +33,8 @@ stratifyIncidence <- function(connectionDetails,
                          cohortDefinitionId,
                          cohortTableName = "cohort",
                          yearStart = "",
-                         yearEnd = "")
+                         yearEnd = "",
+                         sqlOnly = FALSE)
 {
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "stratified.sql", 
                                     packageName = "PhenotypeCharacterization", 
@@ -44,7 +45,11 @@ stratifyIncidence <- function(connectionDetails,
                                     resultsDatabaseSchema = resultsDatabaseSchema,
                                     cohortDefinitionId = cohortDefinitionId,
                                     cohortTableName = cohortTableName)
-  
+  if (sqlOnly == TRUE)
+  {
+    writeSql(sql,"stratified.sql");
+    return();
+  }
   connection <- connect(connectionDetails)
   result <- querySql(connection = connection, sql = sql)
   dbDisconnect(connection)
@@ -74,13 +79,14 @@ stratifyIncidence <- function(connectionDetails,
 #' 
 #' @export
 aggregateIncidence <- function(connectionDetails, 
-                                cdmSourceName, 
-                                cdmDatabaseSchema, 
-                                resultsDatabaseSchema, 
-                                cohortDefinitionId,
+                                    cdmSourceName, 
+                                    cdmDatabaseSchema, 
+                                    resultsDatabaseSchema, 
+                                    cohortDefinitionId,
                                 cohortTableName = "cohort",
                                 yearStart = "",
-                                yearEnd = "")
+                                yearEnd = "",
+                                sqlOnly = FALSE)
 {
   sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "aggregated.sql", 
                                            packageName = "PhenotypeCharacterization", 
@@ -92,6 +98,11 @@ aggregateIncidence <- function(connectionDetails,
                                            resultsDatabaseSchema = resultsDatabaseSchema,
                                            cohortDefinitionId = cohortDefinitionId,
                                            cohortTableName = cohortTableName)
+  if (sqlOnly == TRUE)
+  {
+    writeSql(sql,"aggregated.sql");
+    return();
+  }
   
   connection <- connect(connectionDetails)
   result <- querySql(connection = connection, sql = sql)
@@ -158,7 +169,8 @@ runDrugOutcomeSummary <- function(connectionDetails,
                                   cdmDatabaseSchema, 
                                   resultsDatabaseSchema, 
                                   cohortDefinitionId,
-                                  cohortTableName = "cohort")
+                                  cohortTableName = "cohort",
+                                  sqlOnly = FALSE)
 {
   ## This is a hack for optimizing table distributions in PDW and Redshift
   ctasHashSubjectId <- ctasHashPersonId <- ctasTempPdw <- ""
@@ -186,6 +198,11 @@ runDrugOutcomeSummary <- function(connectionDetails,
                    ctasHashSubjectId = ctasHashSubjectId,
                    ctasHashPersonId = ctasHashPersonId,
                    ctasTempPdw = ctasTempPdw)$sql
+  if (sqlOnly == TRUE)
+  {
+    writeSql(sql,"drug_outcome_summary.sql");
+    return();
+  }
   
   connection <- connect(connectionDetails)
   executeSql(connection = connection, sql)
