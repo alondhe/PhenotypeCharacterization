@@ -35,12 +35,14 @@ select
   A.index_year, 
   A.gender,
   A.age_decile,
+  B.person_count,
+  A.total_count,
   (1.0*sum(B.person_count)) / (1.0*A.total_count) as incidence
 from cte_denominator A
 left join cte_patients B
   on A.index_year = B.index_year 
   and A.gender = B.gender 
   and A.age_decile = B.age_decile
-group by A.index_year, A.gender, A.age_decile, A.total_count
+group by A.index_year, A.gender, A.age_decile, B.person_count, A.total_count
 order by 1,2;
 
